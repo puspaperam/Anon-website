@@ -19,5 +19,13 @@ pipeline{
                     sh 'mvn clean package'
                 }
             }
+            stage('CodeAnalysis'){
+                steps{
+                    withSonarQubeEnv(credentialsId: 'sonnar-anon-website', installationName: 'sonnar-anon-website') {
+                    sh 'mvn sonar:sonar' 
+                }
+              }
+            }
+            
         }
     }
