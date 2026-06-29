@@ -7,6 +7,12 @@ pipeline {
 
     stages {
 
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
         stage('Code Checkout') {
             steps {
                 git branch: 'main',
@@ -36,32 +42,37 @@ pipeline {
 
         stage('Upload Artifacts') {
             steps {
-                nexusArtifactUploader(
-                    nexusVersion: 'nexus3',
-                    protocol: 'http',
-                    nexusUrl: '192.168.124.129:8081',
-                    groupId: 'com.example.maven-project',
-                    version: '1.0-SNAPSHOT',
-                    repository: 'upendra-snapshot',
-                    credentialsId: 'linux-agent-creds',
-                    artifacts: [[
-                        artifactId: 'webapp',
-                        classifier: '',
-                        file: 'webapp/target/webapp.war',
-                        type: 'war'
-                    ]]
-                )
+                script {
+                    def pom = readMavenPom file: 'pom.xml'
+
+                    nexusArtifactUploader(
+                        artifacts: [[
+                            artifactId: pom.artifactId,
+                            classifier: '',
+                            file: "target/${pom.artifactId}.war",
+                            type: 'war'
+                        ]],
+                        credentialsId: 'nexus_cre',
+                        groupId: pom.groupId,
+                        nexusUrl: '192.168.124.129:8081',
+                        nexusVersion: 'nexus3',
+                        protocol: 'http',
+                        repository: pom.version.endsWith("SNAPSHOT") ? "upendra-snapshot" : "upendra-release",
+                        version: pom.version
+                    )
+                }
             }
         }
 
         stage('Deploy Application') {
             steps {
-                sshagent(['tomcat-server-agent']) {
-                    bat '''
-                    scp -o StrictHostKeyChecking=no webapp\\target\\webapp.war root@192.168.124.129:/opt/tomcat/webapps/
-                    '''
+                sshagent(credentials: ['tomcat-server-agent']) {
+                    bat """
+                    scp -o StrictHostKeyChecking=no target\\%ARTIFACT_ID%.war root@192.168.124.129:/opt/tomcat/webapps/
+                    """
                 }
             }
         }
     }
-}
+
+    
