@@ -9,6 +9,11 @@ pipeline{
                     git branch: 'main', url: 'https://github.com/puspaperam/Anon-website.git'
                 }
             }
+            stage('Unit Testig'){
+                steps{
+                    sh 'mvn test'
+                }
+            }
             stage('Compile  Code'){
                 steps{
                     sh 'mvn clean package'
