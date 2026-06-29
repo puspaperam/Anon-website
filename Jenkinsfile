@@ -25,6 +25,7 @@ pipeline{
                     sh 'mvn sonar:sonar' 
                 }
               }
+            }
             stage('Upload  Artifacts'){
                 steps{
                     nexusArtifactUploader artifacts: [[artifactId: 'maven-project', 
@@ -42,4 +43,4 @@ pipeline{
             }
             
         }
-    }
+    
