@@ -19,10 +19,24 @@ pipeline{
                     sh 'mvn clean package'
                 }
             }
-            stage('CodeAnalysis'){
+            stage('Code Analysis'){
                 steps{
                     withSonarQubeEnv(credentialsId: 'sonnar-anon-website', installationName: 'sonnar-anon-website') {
                     sh 'mvn sonar:sonar' 
+                }
+              }
+            stage('Upload  Artifacts'){
+                steps{
+                    nexusArtifactUploader artifacts: [[artifactId: 'maven-project', 
+                    classifier: '', 
+                    file: 'webapp/target/webapp-1.0-SNAPSHOT.war', 
+                    type: 'war']], 
+                    credentialsId: 'linux-agent-creds', 
+                    groupId: 'com.example.maven-project', 
+                    nexusUrl: '192.168.124.129:8081', 
+                    nexusVersion: 'nexus3', protocol: 'http', 
+                    repository: 'upendra-snapshot', 
+                    version: '1.0-SNAPSHOT'
                 }
               }
             }
