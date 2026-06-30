@@ -64,11 +64,9 @@ pipeline {
 
         stage('Deploy Application') {
             steps {
-                sshagent(credentials: ['tomcat-server-agent']) {
-                    bat '''
-                    scp -o StrictHostKeyChecking=no webapp\\target\\webapp.war root@192.168.124.129:/opt/tomcat/webapps/
-                    '''
-                }
+                bat '''
+                scp -o StrictHostKeyChecking=no webapp\\target\\webapp.war root@192.168.124.129:/opt/tomcat/webapps/
+                '''
             }
         }
     }
