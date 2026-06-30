@@ -43,13 +43,13 @@ pipeline {
         stage('Upload Artifacts') {
             steps {
                 script {
-                    def pom = readMavenPom file: 'pom.xml'
+                    def pom = readMavenPom file: 'webapp/pom.xml'
 
                     nexusArtifactUploader(
                         artifacts: [[
                             artifactId: pom.artifactId,
                             classifier: '',
-                            file: "target/${pom.artifactId}.war",
+                            file: file: "webapp/target/${pom.artifactId}.war",,
                             type: 'war'
                         ]],
                         credentialsId: 'nexus_cre',
@@ -67,11 +67,11 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 script {
-                    def pom = readMavenPom file: 'pom.xml'
+                    def pom = readMavenPom file: 'webapp/pom.xml'
 
                     sshagent(credentials: ['tomcat-server-agent']) {
                         bat """
-                        scp -o StrictHostKeyChecking=no target\\${pom.artifactId}.war root@192.168.124.129:/opt/tomcat/webapps/
+                        scp -o StrictHostKeyChecking=no webapp\\target\\${pom.artifactId}.war root@192.168.124.129:/opt/tomcat/webapps/
                         """
                     }
                 }
