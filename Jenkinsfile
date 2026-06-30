@@ -42,41 +42,34 @@ pipeline {
 
         stage('Upload Artifacts') {
             steps {
-                script {
-                    def pom = readMavenPom file: 'webapp/pom.xml'
+                nexusArtifactUploader(
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    nexusUrl: '192.168.124.129:8081',
+                    repository: 'upendra-snapshot',
+                    credentialsId: 'nexus_cre',
 
-                    nexusArtifactUploader(
-                        artifacts: [[
-                            artifactId: pom.artifactId,
-                            classifier: '',
-                            file: "webapp/target/${pom.artifactId}.war",
-                            type: 'war'
-                        ]],
-                        credentialsId: 'nexus_cre',
-                        groupId: pom.groupId,
-                        nexusUrl: '192.168.124.129:8081',
-                        nexusVersion: 'nexus3',
-                        protocol: 'http',
-                        repository: pom.version.endsWith('SNAPSHOT') ? 'upendra-snapshot' : 'upendra-release',
-                        version: pom.version
-                    )
-                }
+                    groupId: 'com.example.maven-project',
+                    version: '1.0-SNAPSHOT',
+
+                    artifacts: [[
+                        artifactId: 'webapp',
+                        classifier: '',
+                        file: 'webapp/target/webapp.war',
+                        type: 'war'
+                    ]]
+                )
             }
         }
 
         stage('Deploy Application') {
             steps {
-                script {
-                    def pom = readMavenPom file: 'webapp/pom.xml'
-
-                    sshagent(credentials: ['tomcat-server-agent']) {
-                        bat """
-                        scp -o StrictHostKeyChecking=no webapp\\target\\${pom.artifactId}.war root@192.168.124.129:/opt/tomcat/webapps/
-                        """
-                    }
+                sshagent(credentials: ['tomcat-server-agent']) {
+                    bat '''
+                    scp -o StrictHostKeyChecking=no webapp\\target\\webapp.war root@192.168.124.129:/opt/tomcat/webapps/
+                    '''
                 }
             }
         }
-
     }
 }
