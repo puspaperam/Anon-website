@@ -49,7 +49,7 @@ pipeline {
                         artifacts: [[
                             artifactId: pom.artifactId,
                             classifier: '',
-                            file: file: "webapp/target/${pom.artifactId}.war",,
+                            file: file: "webapp/target/${pom.artifactId}.war",
                             type: 'war'
                         ]],
                         credentialsId: 'nexus_cre',
